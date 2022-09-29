@@ -7,7 +7,7 @@ COPY run-java.sh /tmp/
 RUN apk add --update --no-cache tzdata curl fontconfig ttf-dejavu openjdk11-jre nss \
  && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone \
  && echo "securerandom.source=file:/dev/urandom" >> /usr/lib/jvm/default-jvm/jre/lib/security/java.security \
- && curl -L https://fit2cloud-support.oss-cn-beijing.aliyuncs.com/xpack-license/get-validator-linux | sh \
+ && curl -L --connect-timeout 60 -m 1800 https://fit2cloud-support.oss-cn-beijing.aliyuncs.com/xpack-license/get-validator-linux | sh \
  && mkdir -p /deployments && mv /tmp/run-java.sh /deployments && chmod 755 /deployments/run-java.sh \
  && rm -rf /tmp/* /var/tmp/* /var/cache/apk/*
 
