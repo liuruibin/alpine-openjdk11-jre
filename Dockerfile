@@ -1,33 +1,19 @@
-FROM alpine:3.16
+FROM alpine:3.16.2
 
 USER root
 
-RUN mkdir -p /deployments \
- && apk add tzdata \
- && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \ 
- && echo "Asia/Shanghai" > /etc/timezone
+COPY run-java.sh /tmp/
 
-# JAVA_APP_DIR is used by run-java.sh for finding the binaries
+RUN apk add --update --no-cache tzdata curl fontconfig ttf-dejavu openjdk11-jre nss \
+ && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone \
+ && echo "securerandom.source=file:/dev/urandom" >> /usr/lib/jvm/default-jvm/jre/lib/security/java.security \
+ && curl -L https://fit2cloud-support.oss-cn-beijing.aliyuncs.com/xpack-license/get-validator-linux | sh \
+ && mkdir -p /deployments && mv /tmp/run-java.sh /deployments && chmod 755 /deployments/run-java.sh \
+ && rm -rf /tmp/* /var/tmp/* /var/cache/apk/*
+
 ENV JAVA_APP_DIR=/deployments \
     JAVA_MAJOR_VERSION=11 \
-    JAVA_OPTIONS=-Dfile.encoding=utf-8 \
+    JAVA_OPTIONS="-Dfile.encoding=utf-8" \
     LOG4J_FORMAT_MSG_NO_LOOKUPS=true
-
-# /dev/urandom is used as random source, which is perfectly safe
-# according to http://www.2uo.de/myths-about-urandom/
-RUN apk add --update \
-    curl fontconfig ttf-dejavu \
-    openjdk11-jre \
- && apk add --no-cache nss  \
- && rm /var/cache/apk/* \
- && echo "securerandom.source=file:/dev/urandom" >> /usr/lib/jvm/default-jvm/jre/lib/security/java.security
-
-
-RUN ARCH=$(uname -m) && case $ARCH in aarch64) ARCH="arm64";; x86_64) ARCH="amd64";; esac && echo "ARCH: " $ARCH && \
-    curl -sLf https://fit2cloud-support.oss-cn-beijing.aliyuncs.com/xpack-license/validator_linux_${ARCH} > /usr/local/bin/validator_linux && chmod +x /usr/local/bin/validator_linux
-
-# Add run script as /deployments/run-java.sh and make it executable
-COPY run-java.sh /deployments/
-RUN chmod 755 /deployments/run-java.sh
 
 CMD [ "/deployments/run-java.sh" ]
