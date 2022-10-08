@@ -344,6 +344,9 @@ calc_max_memory() {
     # Restore the one-fourth default heap size instead of the one-half below 300MB threshold
     # See https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/parallel.html#default_heap_size
     calc_mem_opt "${CONTAINER_MAX_MEMORY}" "25" "mx"
+  elif [ "${CONTAINER_MAX_MEMORY}" -ge 7516192768 ]; then
+    # if above 7gb(maybe neither mem_limit nor CONTAINER_MAX_MEMORY is set), force it to be 1gb.
+    calc_mem_opt "1073741824" "50" "mx"
   else
     calc_mem_opt "${CONTAINER_MAX_MEMORY}" "50" "mx"
   fi
@@ -362,7 +365,12 @@ calc_init_memory() {
   fi
 
   # Calculate Xms from the ratio given
-  calc_mem_opt "${CONTAINER_MAX_MEMORY}" "${JAVA_INIT_MEM_RATIO}" "ms"
+  if [ "${CONTAINER_MAX_MEMORY}" -ge 7516192768 ]; then
+    # if above 7gb(maybe neither mem_limit nor CONTAINER_MAX_MEMORY is set), force it to be 1gb.
+    calc_mem_opt "1073741824" "${JAVA_INIT_MEM_RATIO}" "ms"
+  else
+    calc_mem_opt "${CONTAINER_MAX_MEMORY}" "${JAVA_INIT_MEM_RATIO}" "ms"
+  fi
 }
 
 calc_mem_opt() {
