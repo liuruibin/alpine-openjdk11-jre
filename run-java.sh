@@ -333,7 +333,7 @@ calc_max_heap_memory() {
   # Check for the 'real memory size' and calculate Xmx from the ratio
   if [ -n "${JAVA_MAX_HEAP_RATIO:-}" ]; then
     if [ "${JAVA_MAX_HEAP_RATIO}" -eq 0 ]; then
-      # Explicitely switched off
+      # Explicitly switched off
       return
     fi
     calc_mem_opt "${CONTAINER_MAX_MEMORY}" "${JAVA_MAX_HEAP_RATIO}" "mx"
