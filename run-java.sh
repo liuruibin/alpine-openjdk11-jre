@@ -20,7 +20,7 @@
 # Env-variables evaluated in this script:
 #
 # JAVA_OPTIONS: Checked for already set options
-# JAVA_MAX_MEM_RATIO: Ratio use to calculate a default maximum Memory, in percent.
+# JAVA_MAX_HEAP_RATIO: Ratio use to calculate a default maximum Memory, in percent.
 #                     E.g. the "50" value implies that 50% of the Memory
 #                     given to the container is used as the maximum heap memory with
 #                     '-Xmx'.
@@ -315,12 +315,12 @@ format_classpath() {
 # ==========================================================================
 
 memory_options() {
-  echo "$(calc_init_memory) $(calc_max_memory)"
+  echo "$(calc_init_memory) $(calc_max_heap_memory) $(calc_max_metaspace_memory)"
   return
 }
 
 # Check for memory options and set max heap size if needed
-calc_max_memory() {
+calc_max_heap_memory() {
   # Check whether -Xmx is already given in JAVA_OPTIONS
   if echo "${JAVA_OPTIONS:-}" | grep -q -- "-Xmx"; then
     return
@@ -331,13 +331,13 @@ calc_max_memory() {
   fi
 
   # Check for the 'real memory size' and calculate Xmx from the ratio
-  if [ -n "${JAVA_MAX_MEM_RATIO:-}" ]; then
-    if [ "${JAVA_MAX_MEM_RATIO}" -eq 0 ]; then
+  if [ -n "${JAVA_MAX_HEAP_RATIO:-}" ]; then
+    if [ "${JAVA_MAX_HEAP_RATIO}" -eq 0 ]; then
       # Explicitely switched off
       return
     fi
-    calc_mem_opt "${CONTAINER_MAX_MEMORY}" "${JAVA_MAX_MEM_RATIO}" "mx"
-  # When JAVA_MAX_MEM_RATIO not set and JVM >= 10 no max_memory
+    calc_mem_opt "${CONTAINER_MAX_MEMORY}" "${JAVA_MAX_HEAP_RATIO}" "mx"
+  # When JAVA_MAX_HEAP_RATIO not set and JVM >= 10 no max_memory
   elif [ "${JAVA_MAJOR_VERSION:-0}" -ge "10" ]; then
     return
   elif [ "${CONTAINER_MAX_MEMORY}" -le 314572800 ]; then
@@ -349,6 +349,27 @@ calc_max_memory() {
     calc_mem_opt "1073741824" "50" "mx"
   else
     calc_mem_opt "${CONTAINER_MAX_MEMORY}" "50" "mx"
+  fi
+}
+
+# Check for memory options and set max metaspace size if needed
+calc_max_metaspace_memory() {
+  # Check whether -Xmx is already given in JAVA_OPTIONS
+  if echo "${JAVA_OPTIONS:-}" | grep -q -- "MaxMetaspaceSize"; then
+    return
+  fi
+
+  if [ -z "${CONTAINER_MAX_MEMORY:-}" ]; then
+    return
+  fi
+
+  # Check for the 'real memory size' and calculate MaxMetaspaceSize from the ratio
+  if [ -n "${JAVA_MAX_METASPACE_RATIO:-}" ]; then
+    if [ "${JAVA_MAX_METASPACE_RATIO}" -eq 0 ]; then
+      # Explicitely switched off
+      return
+    fi
+    calc_mem_opt "${CONTAINER_MAX_MEMORY}" "${JAVA_MAX_METASPACE_RATIO}" "X:MaxMetaspaceSize="
   fi
 }
 
