@@ -369,6 +369,10 @@ calc_max_metaspace_memory() {
       # Explicitely switched off
       return
     fi
+    if [ "${CONTAINER_MAX_MEMORY}" -le 314572800 ]; then
+      # don't set MaxMetaspaceSize if CONTAINER_MAX_MEMORY below 300MB threshold
+      return
+    fi
     calc_mem_opt "${CONTAINER_MAX_MEMORY}" "${JAVA_MAX_METASPACE_RATIO}" "X:MaxMetaspaceSize="
   fi
 }
