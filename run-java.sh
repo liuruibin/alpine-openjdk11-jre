@@ -376,7 +376,7 @@ calc_max_metaspace_memory() {
     if [ "${CONTAINER_MAX_MEMORY}" -ge 7516192768 ]; then
         # if above 7gb(maybe neither mem_limit nor CONTAINER_MAX_MEMORY is set), force it to be 1gb.
         calc_mem_opt "1073741824" "${JAVA_MAX_METASPACE_RATIO}" "X:MaxMetaspaceSize="
-    elif
+    else
         calc_mem_opt "${CONTAINER_MAX_MEMORY}" "${JAVA_MAX_METASPACE_RATIO}" "X:MaxMetaspaceSize="
     fi
   fi
