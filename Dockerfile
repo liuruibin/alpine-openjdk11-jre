@@ -10,8 +10,7 @@ ENV JAVA_APP_DIR=/deployments \
     JAVA_OPTIONS="-Dfile.encoding=utf-8" \
     LOG4J_FORMAT_MSG_NO_LOOKUPS=true \
     JAVA_MAJOR_VERSION=11 \
-    JAVA_MAX_HEAP_RATIO=40 \
-    JAVA_MAX_METASPACE_RATIO=25
+    JAVA_MAX_HEAP_RATIO=40
 
 RUN apk add --update --no-cache tzdata curl fontconfig ttf-dejavu openjdk11-jre nss \
  && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone \
